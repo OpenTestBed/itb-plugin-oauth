@@ -1,0 +1,44 @@
+apiVersion: itb-plugins/v1
+name: oauth
+version: 0.1.0
+description: >
+  OAuth 2.1 token vocabulary for the OTB Gherkin language: request a token,
+  exchange an authorization code, introspect a token, and assert on the error
+  responses. Needed by any profile that delegates authorization — IHE IUA,
+  SMART on FHIR, UDAP.
+homepage: https://github.com/OpenTestBed/itb-plugin-oauth
+license: BSD-3-Clause
+maintainers: [jose.a.teixeira@gmail.com]
+
+# DIALECT ONLY — this plugin deploys nothing and calls no service. Every verb
+# here is a plain HTTP exchange through HttpMessagingV2.
+#
+# WHY IT EXISTS. A token endpoint takes application/x-www-form-urlencoded, and
+# the core language cannot send one:
+#
+#   - the core's POST verbs assign Content-Type: application/json inside the
+#     verb, so a `set header` written earlier in the scenario is overwritten;
+#   - a form body has to be assembled from run-time values (an authorization
+#     code, a PKCE verifier, a resource identifier), and the core's {value}
+#     slot accepts only a literal, a $variable or a number — never a concat().
+#
+# Both are deliberate in the core, which is shaped for JSON APIs. Neither is
+# something a test author can work around, so the verbs live here instead.
+#
+# HEADERS. These verbs write Content-Type and Accept into the core's own
+# `jsonHeaders` map rather than a map of their own, so that `set header` and
+# `set bearer token from` keep working alongside them. Client authentication is
+# therefore set the ordinary way, before the request:
+#
+#   Given set header "Authorization" to $clientAuth
+#   When Client requests a token from AuthorizationServer at "/token" with grant "client_credentials"
+runtime: {}
+endpoints: {}
+provides: []
+requires: []
+
+dialect:
+  path: dialect/
+  namespace: oauth
+
+config: {}
